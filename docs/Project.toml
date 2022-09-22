@@ -1,0 +1,3 @@
+[deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+PlugFlowReactor = "ecaff61d-cab6-41c0-aa18-077b272b9ea4"

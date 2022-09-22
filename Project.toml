@@ -1,0 +1,13 @@
+name = "PlugFlowReactor"
+uuid = "ecaff61d-cab6-41c0-aa18-077b272b9ea4"
+authors = ["Vinod Janardhanan"]
+version = "0.1.0"
+
+[compat]
+julia = "1.8.1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
