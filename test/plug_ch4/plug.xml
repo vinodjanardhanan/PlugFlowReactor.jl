@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plug>
+	<molefractions>CH4=0.25,O2=0.5,N2=0.25</molefractions>
+	<T>1073.15</T>
+	<p>1e5</p>
+	<length>0.3</length>
+	<dia>0.005</dia>
+	<u>0.1</u>
+	<Tw>1173.15</Tw>
+	<isothermal>true</isothermal>
+	<gas_mech>grimech.dat</gas_mech>
+</plug>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plug>
+	<gasphase>CH4 H2O H2 CO CO2 O2 N2</gasphase>
+	<molefractions>CH4=0.25,CO2=0.25,N2=0.5</molefractions>
+	<T>1073.15</T>
+	<p>1e5</p>
+	<length>0.3</length>
+	<dia>0.005</dia>
+	<u>0.1</u>
+	<Tw>1073.15</Tw>
+	<isothermal>true</isothermal>
+	<cat-geom-factor>1000</cat-geom-factor>
+</plug>

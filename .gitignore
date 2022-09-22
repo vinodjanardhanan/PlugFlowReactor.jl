@@ -3,3 +3,8 @@
 *.jl.mem
 /Manifest.toml
 /docs/build/
+run
+/test/plug_surf/*.dat
+/test/plug_h2o2/*.dat
+/test/plug_ch4/*.dat
+/test/plug_udf/*.dat
