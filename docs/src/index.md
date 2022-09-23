@@ -111,7 +111,7 @@ The structure of the *plug.xml* input file is shown below.
 </plug
 ```
 
-The major difference between the input file for surface chemistry problem and gasphase chemistry problem is the <gasphase> tag of xml input. In the case of gasphase chemistry problem, the participating species are read from the mechanism input file, which is specified using the <gas_mech> tag
+The major difference between the input file for surface chemistry problem and gasphase chemistry problem is the *<gasphase>* tag of xml input. In the case of gasphase chemistry problem, the participating species are read from the mechanism input file, which is specified using the *<gas_mech>* tag
 
 
 ## Input file for user defined chemistry problems
@@ -151,7 +151,7 @@ The meaning of different tags is specified below.
 
 
 ## Input file download
-The xml input file and the *lib* directory containig other required input files may be downloaded from [here](https://github.com/vinodjanardhanan/Plug.jl/tree/main/test).
+The xml input file and the *lib* directory containig other required input files may be downloaded from [here](https://github.com/vinodjanardhanan/PlugFlowReactor.jl/tree/main/test).
 
 # Output
 The code generates two output files in the same directory where the input file **`cstr.xml`** is present. 

@@ -10,10 +10,11 @@ using IdealGas, RxnHelperUtils, SurfaceReactions, ReactionCommons, GasphaseReact
         lib_dir = "lib\\"
     end
 
-    # @testset "Testing surface chemistry" begin        
-    #     retcode = plug("plug_surf/plug.xml", lib_dir, surfchem=true)
-    #     @test retcode == Symbol("Success")
-    # end
+    @testset "Testing surface chemistry" begin        
+        input_file = joinpath("plug_surf", "plug.xml")
+        retcode = plug(input_file, lib_dir, surfchem=true)
+        @test retcode == Symbol("Success")
+    end
 
     @testset "Testing gas chemistry of h2 + o2" begin
         
@@ -72,11 +73,4 @@ using IdealGas, RxnHelperUtils, SurfaceReactions, ReactionCommons, GasphaseReact
         retcode = plug(input_file, lib_dir, udf)
         @test retcode == Symbol("Success")        
     end
-
-    @testset "Testing surface chemistry " begin
-        input_file = joinpath("plug_surf", "plug.xml")
-        retcode = plug(input_file, lib_dir, surfchem=true)
-        @test retcode == Symbol("Success")
-    end
-
 end
