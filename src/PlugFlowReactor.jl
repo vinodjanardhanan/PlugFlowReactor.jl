@@ -115,7 +115,8 @@ function plug(input_file::AbstractString, lib_dir::AbstractString, sens, chem::C
     if chem.surfchem
         #Get the mechanism file from xml
         mech_file = get_text_from_xml(xmlroot,"surface_mech")
-        mech_file = lib_dir*"/"*mech_file
+        # mech_file = lib_dir*"/"*mech_file
+        mech_file = get_path(lib_dir, mech_file)
         md = SurfaceReactions.compile_mech(mech_file,thermo_obj,gasphase)
     end
         
@@ -199,7 +200,7 @@ function plug(input_file::AbstractString, lib_dir::AbstractString, sens, chem::C
     
     close(s_stream)
     close(g_stream)    
-    return sol.retcode
+    return Symbol(sol.retcode)
 end
 
 
