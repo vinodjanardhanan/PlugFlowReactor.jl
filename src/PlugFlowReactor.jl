@@ -132,12 +132,16 @@ function plug(input_file::AbstractString, lib_dir::AbstractString, sens, chem::C
     #file output streams for saving the data
     g_stream = open(output_file(input_file, "gas_profile.dat"),"w")
     s_stream = open(output_file(input_file, "surf_covg.dat"),"w")
-    global os_streams = (g_stream,s_stream)
+    csv_g_stream = open(output_file(input_file, "gas_profile.csv"),"w")
+    csv_s_stream = open(output_file(input_file, "surf_covg.csv"),"w")
+    global os_streams = (g_stream,s_stream, csv_g_stream, csv_s_stream)
     geometry = (Ac,As_per_unit_length,cat_geom)    
 
     create_header(g_stream,["z","T","p","u","rho"],gasphase)
+    create_csv_header(csv_g_stream,["z","T","p","u","rho"],gasphase)
     if chem.surfchem
         create_header(s_stream,"z","T",md.sm.species)
+        create_csv_header(csv_s_stream,"z","T",md.sm.species)
     end
     #Set up the problem
     t_span = (0,l)
@@ -200,6 +204,8 @@ function plug(input_file::AbstractString, lib_dir::AbstractString, sens, chem::C
     
     close(s_stream)
     close(g_stream)    
+    close(csv_g_stream)
+    close(csv_s_stream)
     return Symbol(sol.retcode)
 end
 
@@ -337,12 +343,14 @@ function write_out_put(u,t,integrator)
     # state = integrator.p[1]
     # thermo_obj = integrator.p[2]
     # g_stream, s_stream = integrator.p[5]
-    g_stream, s_stream = os_streams    
+    g_stream, s_stream, csv_g_stream, csv_s_stream = os_streams    
     d = density(integrator.p[1].mole_frac,integrator.p[2].molwt,integrator.p[1].T,integrator.p[1].p)
     vel = u[length(integrator.p[1].mole_frac)+1]/d
     write_to_file(g_stream,t,integrator.p[1].T,integrator.p[1].p,vel,d,integrator.p[1].mole_frac)
+    write_csv_file(csv_g_stream,t,integrator.p[1].T,integrator.p[1].p,vel,d,integrator.p[1].mole_frac)
     if integrator.p[end].surfchem
         write_to_file(s_stream,t,integrator.p[1].T,integrator.p[1].covg)
+        write_csv_file(csv_s_stream,t,integrator.p[1].T,integrator.p[1].covg)
     end
     @printf("%.4e\n", t)   
 end
