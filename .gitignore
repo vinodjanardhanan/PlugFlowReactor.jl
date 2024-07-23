@@ -8,3 +8,7 @@ run
 /test/plug_h2o2/*.dat
 /test/plug_ch4/*.dat
 /test/plug_udf/*.dat
+/test/plug_surf/*.csv
+/test/plug_h2o2/*.csv
+/test/plug_ch4/*.csv
+/test/plug_udf/*.csv
