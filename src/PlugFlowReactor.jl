@@ -138,10 +138,10 @@ function plug(input_file::AbstractString, lib_dir::AbstractString, sens, chem::C
     geometry = (Ac,As_per_unit_length,cat_geom)    
 
     create_header(g_stream,["z","T","p","u","rho"],gasphase)
-    create_csv_header(csv_g_stream,["z","T","p","u","rho"],gasphase)
+    write_csv(csv_g_stream,["z","T","p","u","rho"],gasphase)
     if chem.surfchem
         create_header(s_stream,"z","T",md.sm.species)
-        create_csv_header(csv_s_stream,"z","T",md.sm.species)
+        write_csv(csv_s_stream,"z","T",md.sm.species)
     end
     #Set up the problem
     t_span = (0,l)
@@ -347,10 +347,10 @@ function write_out_put(u,t,integrator)
     d = density(integrator.p[1].mole_frac,integrator.p[2].molwt,integrator.p[1].T,integrator.p[1].p)
     vel = u[length(integrator.p[1].mole_frac)+1]/d
     write_to_file(g_stream,t,integrator.p[1].T,integrator.p[1].p,vel,d,integrator.p[1].mole_frac)
-    write_csv_file(csv_g_stream,t,integrator.p[1].T,integrator.p[1].p,vel,d,integrator.p[1].mole_frac)
+    write_csv(csv_g_stream,t,integrator.p[1].T,integrator.p[1].p,vel,d,integrator.p[1].mole_frac)
     if integrator.p[end].surfchem
         write_to_file(s_stream,t,integrator.p[1].T,integrator.p[1].covg)
-        write_csv_file(csv_s_stream,t,integrator.p[1].T,integrator.p[1].covg)
+        write_csv(csv_s_stream,t,integrator.p[1].T,integrator.p[1].covg)
     end
     @printf("%.4e\n", t)   
 end
