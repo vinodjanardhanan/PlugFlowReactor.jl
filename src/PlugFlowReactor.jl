@@ -183,13 +183,13 @@ function plug(input_file::AbstractString, lib_dir::AbstractString, sens, chem::C
 
 
     if chem.surfchem && !chem.gaschem
-        params = (sr_state, thermo_obj, md, geometry, chem)
+        params = (s_state = sr_state, thermo = thermo_obj, smd = md, geometry= geometry, chem = chem)
     elseif chem.gaschem && !chem.surfchem
-        params = (gs_state, thermo_obj, gmd, geometry,  chem)        
+        params = (g_state = gs_state, thermo = thermo_obj, gmd = gmd, geometry = geometry,  chem=chem)        
     elseif chem.gaschem && chem.surfchem
-        params = (gs_state, sr_state, thermo_obj, md, gmd, geometry, chem)
+        params = (g_state = gs_state, s_state=sr_state, thermo =thermo_obj, smd=md, gmd=gmd, geometry=geometry, chem=chem)
     elseif chem.userchem
-        params = (usr_state, thermo_obj, [], geometry, chem)
+        params = (state = usr_state, thermo = thermo_obj, md = nothing, geometry = geometry, chem = chem)
     end
 
 
@@ -198,8 +198,9 @@ function plug(input_file::AbstractString, lib_dir::AbstractString, sens, chem::C
         return (params, prob, t_span)
     end
 
+    alg = CVODE_BDF()    
     cb = FunctionCallingCallback(write_out_put)    
-    sol = solve(prob, CVODE_BDF(), reltol=1e-6, abstol=1e-10, save_everystep=false,callback=cb);        
+    sol = solve(prob, alg, reltol=1e-6, abstol=1e-10, save_everystep=false,callback=cb);        
     
     
     close(s_stream)
@@ -257,8 +258,9 @@ function plug(inlet_comp, T, p, vel, l; chem, thermo_obj, md, geometry)
         all_conc = zeros(n_species)
         sr_state = SurfaceRxnState(T, p, mole_fracs, covg, surf_conc, rxn_rate, rate, all_conc)
         #this step is to get the steady state coverage before starting the plug flow integration
-        t, sr_state = SurfaceReactions.calculate_ss_molar_production_rates!(sr_state,thermo_obj,md,1.0)        
-        params = (sr_state, thermo_obj, md, geom, chem)
+        t, sr_state = SurfaceReactions.calculate_ss_molar_production_rates!(sr_state,thermo_obj,md,1.0)   
+            
+        params = (s_state = sr_state, thermo = thermo_obj, smd = md, geometry = geom, chem = chem)
     end
 
     if chem.gaschem        
@@ -270,8 +272,8 @@ function plug(inlet_comp, T, p, vel, l; chem, thermo_obj, md, geometry)
         Kp = zeros(length(md.gm.reactions))            
         rxn_rate = zeros(length(Kp))                
 
-        gs_state = GasphaseState(T, p, mole_fracs, conc, rxn_rate, source, g_all, Kp)            
-        params = (gs_state, thermo_obj, md, geom,  chem)
+        gs_state = GasphaseState(T, p, mole_fracs, conc, rxn_rate, source, g_all, Kp)       
+        params = (g_state = gs_state, thermo = thermo_obj, gmd = md, geometry= geom, chem = chem)              
     end
 
 
@@ -283,7 +285,8 @@ function plug(inlet_comp, T, p, vel, l; chem, thermo_obj, md, geometry)
     
     t_span = (0, l)
     prob = ODEProblem(residual!, soln, t_span, params)
-    sol = solve(prob, CVODE_BDF(), reltol = 1e-6, abstol=1e-10, save_everystep=false)
+    alg = CVODE_BDF()
+    sol = solve(prob, alg , reltol = 1e-6, abstol=1e-10, save_everystep=false)
     mass_fracs = sol.u[end][1:end-1]
     mole_fracs = zeros(length(mass_fracs))
     massfrac_to_molefrac!(mole_fracs, mass_fracs, thermo_obj.molwt)    
@@ -296,44 +299,61 @@ end
 residual function that defined the governing equations    
 =#
 function residual!(du,u,p,t)    
-    #unpack the parameters    
-    state = 1
-    thermo_obj = 2
-    md = 3
-    geom = 4
-    
 
     # state,thermo_obj,md,geom,os_stream = p
-    # Ac,Aspul,cat_geom = geom
-    Ac,Aspul,cat_geom = p[geom]
-    
+    geom = p[:geometry]
+    Ac,Aspul,cat_geom = geom
     
     #Convert massfractions to molefractions
-    ng = length(p[state].mole_frac)    
+    if p[:chem].gaschem && p[:chem].surfchem
+        ng = length(p[:g_state].mole_frac)    
+    elseif p[:chem].surfchem 
+        ng = length(p[:s_state].mole_frac)    
+    elseif p[:chem].gaschem
+        ng = length(p[:g_state].mole_frac)    
+    elseif p[:chem].userchem
+        ng = length(p[:state].mole_frac)
+    end
+
     # massfracs = u[1:ng]
     
-    massfrac_to_molefrac!(p[state].mole_frac ,u[1:ng], p[thermo_obj].molwt)
     
-    if p[end].surfchem
+    
+    if p[:chem].surfchem 
         #Calculate the molar production rates due to surface reactions 
-        SurfaceReactions.calculate_ss_molar_production_rates!(p[state],p[thermo_obj],p[md],1.0)
-        p[state].source[1:ng] *= cat_geom*(Aspul/Ac)
+        massfrac_to_molefrac!(p[:s_state].mole_frac ,u[1:ng], p[:thermo].molwt)
+        SurfaceReactions.calculate_ss_molar_production_rates!(p[:s_state],p[:thermo],p[:smd],1.0)
+        p[:s_state].source[1:ng] *= cat_geom*(Aspul/Ac)
     end
 
-    if p[end].gaschem && !p[end].surfchem        
+    if p[:chem].gaschem && ! p[:chem].surfchem        
+        massfrac_to_molefrac!(p[:g_state].mole_frac ,u[1:ng], p[:thermo].molwt)
         #Calculate the molar production rates due to gasphase reactions 
-        GasphaseReactions.calculate_molar_production_rates!(p[state], p[md], p[thermo_obj])
+        GasphaseReactions.calculate_molar_production_rates!(p[:g_state], p[:gmd], p[:thermo])
     end
 
-    if p[end].userchem
-        p[end].udf(p[1])
+    if p[:chem].userchem
+        p[:chem].udf(p[:state])
     end
     
-    #species residual            
-    du[1:ng] = (p[state].source[1:ng] .* p[thermo_obj].molwt)/u[ng+1]
-  
-    #mass flux
-    du[ng+1] = sum(p[state].source[1:ng] .* p[thermo_obj].molwt)
+    #species residual
+    if p[:chem].surfchem && !p[:chem].gaschem            
+        du[1:ng] = (p[:s_state].source[1:ng] .* p[:thermo].molwt)/u[ng+1]
+        #mass flux
+        du[ng+1] = sum(p[:s_state].source[1:ng] .* p[:thermo].molwt)
+    elseif !p[:chem].surfchem && p[:chem].gaschem            
+        du[1:ng] = (p[:g_state].source[1:ng] .* p[:thermo].molwt)/u[ng+1]
+        #mass flux
+        du[ng+1] = sum(p[:g_state].source[1:ng] .* p[:thermo].molwt)
+    elseif p[:chem].surfchem && p[:chem].gaschem
+        du[1:ng] = ((p[:g_state].source[1:ng] + p[:s_state].source[1:ng]) .* p[:thermo].molwt)/u[ng+1]
+        #mass flux
+        du[ng+1] = sum(p[:g_state].source[1:ng] .* p[:thermo].molwt) + sum(p[:s_state].source[1:ng] .* p[:thermo].molwt)
+    elseif p[:chem].userchem
+        du[1:ng] = p[:state].source[1:ng] .* p[:thermo].molwt/ u[ng+1]
+    end
+
+    
 end
 
 
@@ -343,14 +363,21 @@ function write_out_put(u,t,integrator)
     # state = integrator.p[1]
     # thermo_obj = integrator.p[2]
     # g_stream, s_stream = integrator.p[5]
+    if integrator.p[:chem].surfchem && !integrator.p[:chem].gaschem
+        state = integrator.p[:s_state]
+    elseif integrator.p[:chem].gaschem
+        state = integrator.p[:g_state]
+    elseif integrator.p[:chem].userchem
+        state = integrator.p[:state]
+    end
     g_stream, s_stream, csv_g_stream, csv_s_stream = os_streams    
-    d = density(integrator.p[1].mole_frac,integrator.p[2].molwt,integrator.p[1].T,integrator.p[1].p)
-    vel = u[length(integrator.p[1].mole_frac)+1]/d
-    write_to_file(g_stream,t,integrator.p[1].T,integrator.p[1].p,vel,d,integrator.p[1].mole_frac)
-    write_csv(csv_g_stream,t,integrator.p[1].T,integrator.p[1].p,vel,d,integrator.p[1].mole_frac)
-    if integrator.p[end].surfchem
-        write_to_file(s_stream,t,integrator.p[1].T,integrator.p[1].covg)
-        write_csv(csv_s_stream,t,integrator.p[1].T,integrator.p[1].covg)
+    d = density(state.mole_frac,integrator.p[:thermo].molwt,state.T,state.p)
+    vel = u[length(state.mole_frac)+1]/d
+    write_to_file(g_stream,t,state.T,state.p,vel,d,state.mole_frac)
+    write_csv(csv_g_stream,t,state.T,state.p,vel,d,state.mole_frac)
+    if integrator.p[:chem].surfchem
+        write_to_file(s_stream,t,integrator.p[:s_state].T,integrator.p[:s_state].covg)
+        write_csv(csv_s_stream,t,integrator.p[:s_state].T,integrator.p[:s_state].covg)
     end
     @printf("%.4e\n", t)   
 end

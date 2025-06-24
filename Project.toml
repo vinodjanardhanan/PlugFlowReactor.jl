@@ -15,16 +15,15 @@ Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 SurfaceReactions = "59f5dcf9-29de-47f3-bbe3-a47d1f19a124"
 
 [compat]
-julia = "1.9.1"
-DifferentialEquations = "7.13.0"
+DifferentialEquations = "7.16.1"
 GasphaseReactions = "0.1.5"
 IdealGas = "0.1.9"
 LightXML = "0.9.1"
 ReactionCommons = "0.2.2"
 RxnHelperUtils = "1.0.3"
-Sundials = "4.24.0"
+Sundials = "4.28.0"
 SurfaceReactions = "0.1.6"
-
+julia = "1.9.1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
