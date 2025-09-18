@@ -1,7 +1,7 @@
 name = "PlugFlowReactor"
 uuid = "ecaff61d-cab6-41c0-aa18-077b272b9ea4"
 authors = ["Vinod Janardhanan"]
-version = "0.1.3"
+version = "0.1.4"
 
 [deps]
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
@@ -16,13 +16,13 @@ SurfaceReactions = "59f5dcf9-29de-47f3-bbe3-a47d1f19a124"
 
 [compat]
 DifferentialEquations = "7.16.1"
-GasphaseReactions = "0.1.5"
-IdealGas = "0.1.9"
+GasphaseReactions = "0.1.6"
+IdealGas = "0.2.3"
 LightXML = "0.9.1"
 ReactionCommons = "0.2.2"
 RxnHelperUtils = "1.0.3"
 Sundials = "4.28.0"
-SurfaceReactions = "0.1.6"
+SurfaceReactions = "0.1.8"
 julia = "1.9.1"
 
 [extras]

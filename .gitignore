@@ -12,3 +12,5 @@ run
 /test/plug_h2o2/*.csv
 /test/plug_ch4/*.csv
 /test/plug_udf/*.csv
+/test/plug_gas_and_surf/*.csv
+/test/plug_gas_and_surf/*.dat
